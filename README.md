@@ -1,14 +1,14 @@
 
 ## Installation
 ```
-npm install cropper-js -S
+npm install cutterjs -S
 ```
 
 ## Quick Start
 ```
-import CropperJS from 'cropper-js'
+import Cutter from 'cutterjs'
 
-new CropperJS({
+new Cutter({
     imageSrc: './images/1.jpeg',
     containerEl: '.wrap',
     mangnifyEl: '#magnify',

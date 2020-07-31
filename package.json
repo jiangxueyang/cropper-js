@@ -1,6 +1,6 @@
 {
 	"name": "cutterjs",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"description": "javascript cutterjs cropperjs image tool",
 	"main": "dist/cropper.min.js",
 	"scripts": {

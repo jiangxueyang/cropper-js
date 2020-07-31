@@ -4,30 +4,30 @@ export default class {
 		this.rotate = 0 // 旋转角度
 		this.dragStatus = 0 // 拖拽状态
 		this.cursorEnums = ['default', 'nw-resize', 'w-resize', 'sw-resize', 'n-resize', 's-resize', 'ne-resize', 'e-resize', 'se-resize', 'move'] // 鼠标状态
-		this.cropperIsEnter = false // 鼠标是否进入裁剪区域
+		this.cutterIsEnter = false // 鼠标是否进入裁剪区域
 		this.ropperIsDown = false // 鼠标是否在裁剪区域按下
 		this.startPos = null // 开始坐标
 		/* 默认配置 */
 		this.defaultConfig = {
-			cropWidth: 200, // 裁剪区域默认宽度，单位px
-			cropHeight: 200, // 裁剪区域默认高度，单位px
-			minCropWidth: 16, // 裁剪区域最小宽度，单位px
-			minCropHeight: 16, // 裁剪区域最小高度，单位px
+			cutWidth: 200, // 裁剪区域默认宽度，单位px
+			cutHeight: 200, // 裁剪区域默认高度，单位px
+			mincutWidth: 16, // 裁剪区域最小宽度，单位px
+			mincutHeight: 16, // 裁剪区域最小高度，单位px
 			maxScale: 3, // 图片能放大的最大倍数，相对图片原始尺寸
 			minScale: 0.1, // 图片能缩小的最小倍数，相对图片原始尺寸
 			scale: 1.2, // 每次放大的倍数，必须大于1，缩小为1/scale
 			canMagnify: true, // boolean 是否可放大
 			canReduce: true, // boolean 是否可缩小
 			canRotate: true, // boolean 能否逆时针旋转图片
-			canChangeCropSize: true, // boolean 能否改变裁剪区域大小，默认true
+			canChangeCutSize: true, // boolean 能否改变裁剪区域大小，默认true
 			imageSrc: '', // 图片资源, 必传
 			containerEl: '', // 裁剪操作容器，图片与裁剪框将展示在这个区域，可为类名、id
 			mangnifyEl: '', // 放大图片的dom元素，可为类名、id
 			reduceEl: '', // 缩小图片的dom元素，可为类名、id
-			cropEl: '', // 触发裁剪的dom元素，可为类名、id
+			cutEl: '', // 触发裁剪的dom元素，可为类名、id
 			rotateEl: '', // 触发逆时针旋转的dom元素，可为类名、id
 			onRender: null, // 渲染成功回调
-			onCrop: null // 裁剪成功回调
+			onCut: null // 裁剪成功回调
 		}
 		if (!this.checkConfig(config)) return
 		this.init()
@@ -36,38 +36,38 @@ export default class {
 	checkConfig(config) {
 		if (isEmpty(config)) return false
 		if (!isObject(config)) return warn('配置信息格式不合法')
-		let arr = ['cropWidth', 'cropHeight', 'minCropWidth', 'minCropHeight', 'maxScale', 'minScale', 'scale']
+		let arr = ['cutWidth', 'cutHeight', 'mincutWidth', 'mincutHeight', 'maxScale', 'minScale', 'scale']
 		arr.forEach((key) => {
 			if (config.hasOwnProperty(key)) {
 				config[key] = parseFloat(config[key])
 			}
 		})
 		config = {...this.defaultConfig, ...config}
-		let {containerEl, minCropWidth, minCropHeight, cropWidth, cropHeight, maxScale, minScale, canReduce, canMagnify} = config
+		let {containerEl, mincutWidth, mincutHeight, cutWidth, cutHeight, maxScale, minScale, canReduce, canMagnify} = config
 		// 判断containerEl
 		if (isEmpty(containerEl)) return warn('containerEl未配置')
 		let container = document.querySelector(containerEl)
 		if (!container) return warn(containerEl + '的dom元素不存在')
 		this.container = container
-		//判断minCropWidth, minCropHeight
-		if (config.canChangeCropSize) {
-			if (!isEmpty(minCropHeight)) {
-				if (!isNumber(minCropHeight)) return warn('minCropHeight必须为数值')
-				if (Number(minCropHeight) < 1) return warn('minCropHeight不能小于1')
+		//判断mincutWidth, mincutHeight
+		if (config.canChangeCutSize) {
+			if (!isEmpty(mincutHeight)) {
+				if (!isNumber(mincutHeight)) return warn('mincutHeight必须为数值')
+				if (Number(mincutHeight) < 1) return warn('mincutHeight不能小于1')
 			}
-			if (!isEmpty(minCropWidth)) {
-				if (!isNumber(minCropWidth)) return warn('minCropWidth必须为数值')
-				if (Number(minCropWidth) < 1) return warn('minCropWidth不能小于1')
+			if (!isEmpty(mincutWidth)) {
+				if (!isNumber(mincutWidth)) return warn('mincutWidth必须为数值')
+				if (Number(mincutWidth) < 1) return warn('mincutWidth不能小于1')
 			}
 		}
-		// 判断cropWidth， cropHeight
-		if (!isEmpty(cropWidth)) {
-			if (!isNumber(cropWidth)) return warn('cropWidtht必须为数值')
-			if (Number(cropWidth) < 1) return warn('cropWidth不能小于1')
+		// 判断cutWidth， cutHeight
+		if (!isEmpty(cutWidth)) {
+			if (!isNumber(cutWidth)) return warn('cutWidtht必须为数值')
+			if (Number(cutWidth) < 1) return warn('cutWidth不能小于1')
 		}
-		if (!isEmpty(cropHeight)) {
-			if (!isNumber(cropHeight)) return warn('cropHeight必须为数值')
-			if (Number(cropHeight) < 1) return warn('cropHeight不能小于1')
+		if (!isEmpty(cutHeight)) {
+			if (!isNumber(cutHeight)) return warn('cutHeight必须为数值')
+			if (Number(cutHeight) < 1) return warn('cutHeight不能小于1')
 		}
 		// 判断放大缩小相关参数
 		if (canMagnify) {
@@ -100,10 +100,10 @@ export default class {
 			}
 		}
 		/* 触发裁剪的dom校验 */
-		let {cropEl} = config
-		if (!isEmpty(cropEl)) {
-			let submitNode = document.querySelector(cropEl)
-			if (!submitNode) return warn(cropEl + '的dom不存在')
+		let {cutEl} = config
+		if (!isEmpty(cutEl)) {
+			let submitNode = document.querySelector(cutEl)
+			if (!submitNode) return warn(cutEl + '的dom不存在')
 			this.submitNode = submitNode
 		}
 		/* 判断imageSrc*/
@@ -177,7 +177,7 @@ export default class {
 				imgWidth = imgHeight * imgRatio
 			}
 		}
-		let res = this.adjustToCrop(imgWidth, imgHeight)
+		let res = this.adjustToCut(imgWidth, imgHeight)
 		imgWidth = toFixed(res.imgWidth)
 		imgHeight = toFixed(res.imgHeight)
 		image.style.width = imgWidth + 'px'
@@ -199,9 +199,9 @@ export default class {
 	/* 添加蒙层 */
 	addMask() {
 		let {container, containerH, containerW} = this
-		let {cropHeight, cropWidth} = this.config
-		let cropBox = document.createElement('div')
-		cropBox.setAttribute('style', 'position:absolute;box-sizing: border-box;border: 1px dashed #fff;')
+		let {cutHeight, cutWidth} = this.config
+		let cutterBox = document.createElement('div')
+		cutterBox.setAttribute('style', 'position:absolute;box-sizing: border-box;border: 1px dashed #fff;')
 		let leftMask = this.createMask()
 		let rightMask = this.createMask()
 		let topMask = this.createMask()
@@ -210,37 +210,37 @@ export default class {
 		rightMask.style.right = 0
 		topMask.style.top = 0
 		bottomMask.style.bottom = 0
-		let array = [leftMask, rightMask, topMask, bottomMask, cropBox]
+		let array = [leftMask, rightMask, topMask, bottomMask, cutterBox]
 		array.forEach(el => {
 			container.appendChild(el)
 		})
-		this.cropBox = cropBox
+		this.cutterBox = cutterBox
 		this.leftMask = leftMask
 		this.rightMask = rightMask
 		this.topMask = topMask
 		this.bottomMask = bottomMask
-		let left = (containerW - cropWidth) / 2
-		let top = (containerH - cropHeight) / 2
-		this.setMaskStyle(left, top, cropWidth, cropHeight)
+		let left = (containerW - cutWidth) / 2
+		let top = (containerH - cutHeight) / 2
+		this.setMaskStyle(left, top, cutWidth, cutHeight)
 	}
-	/* 设置mask和cropperBox的样式 */
-	setMaskStyle(left, top, cropWidth, cropHeight) {
-		let {cropBox, leftMask, rightMask, bottomMask, topMask, containerW, containerH} = this
-		cropBox.style.top = top + 'px'
-		cropBox.style.left = left + 'px'
-		cropBox.style.width = cropWidth + 'px'
-		cropBox.style.height = cropHeight + 'px'
-		rightMask.style.width = containerW - left - cropWidth + 'px'
+	/* 设置mask和cutterBox的样式 */
+	setMaskStyle(left, top, cutWidth, cutHeight) {
+		let {cutterBox, leftMask, rightMask, bottomMask, topMask, containerW, containerH} = this
+		cutterBox.style.top = top + 'px'
+		cutterBox.style.left = left + 'px'
+		cutterBox.style.width = cutWidth + 'px'
+		cutterBox.style.height = cutHeight + 'px'
+		rightMask.style.width = containerW - left - cutWidth + 'px'
 		leftMask.style.width = left + 'px'
 		leftMask.style.height = rightMask.style.height = containerH + 'px'
-		topMask.style.width = bottomMask.style.width = cropWidth + 'px'
-		bottomMask.style.height = containerH - top - cropHeight + 'px'
+		topMask.style.width = bottomMask.style.width = cutWidth + 'px'
+		bottomMask.style.height = containerH - top - cutHeight + 'px'
 		topMask.style.height = top + 'px'
 		topMask.style.left = bottomMask.style.left = left + 'px'
-		this.config.cropWidth = cropWidth
-		this.config.cropHeight = cropHeight
-		this.cropTop = top
-		this.cropLeft = left
+		this.config.cutWidth = cutWidth
+		this.config.cutHeight = cutHeight
+		this.cutTop = top
+		this.cutLeft = left
 	}
 	createMask() {
 		let node = document.createElement('div')
@@ -250,39 +250,39 @@ export default class {
 	}
 	/* 绑定事件 */
 	bindEvent() {
-		let {container, cropBox} = this
-		cropBox.onmouseenter = (e) => {
-			this.cropperIsEnter = true
+		let {container, cutterBox} = this
+		cutterBox.onmouseenter = (e) => {
+			this.cutterIsEnter = true
 			this.initMouse(e)
 			container.onmousemove = (e) => {
-				if (!this.cropperIsEnter) return
-				if (this.cropperIsDown) {
+				if (!this.cutterIsEnter) return
+				if (this.cutterIsDown) {
 					this.handleResize(e)
 				} else {
 					this.initMouse(e)
 				}
 			}
 			container.onmousedown = (e) => {
-				if (!this.cropperIsEnter) return
+				if (!this.cutterIsEnter) return
 				if (this.dragStatus <= 0) return
-				this.cropperIsDown = true
+				this.cutterIsDown = true
 				this.handleMouseDown(e)
 				container.onmouseup = () => {
-					if (!this.cropperIsDown) return
-					this.cropperIsDown = false
-					this.checkCropperBox()
+					if (!this.cutterIsDown) return
+					this.cutterIsDown = false
+					this.checkCutterBox()
 					container.onmouseup = null
 				}
 			}
 		}
 		container.onmouseleave = () => {
-			this.cropperIsEnter = false
+			this.cutterIsEnter = false
 			this.dragStatus = 0
-			this.cropperIsDown = false
+			this.cutterIsDown = false
 			container.onmousemove = null
 			container.onmousedown = null
 			container.onmouseup = null
-			this.checkCropperBox()
+			this.checkCutterBox()
 		}
 		let {canRotate, canMagnify, canReduce, scale} = this.config
 		/* 放大 */
@@ -308,47 +308,47 @@ export default class {
 		/* 裁剪 */
 		if (this.submitNode) {
 			this.submitNode.onclick = () => {
-				this.cropImage()
+				this.cutImage()
 			}
 		}
 	}
 	/* 裁剪图片 */
-	cropImage() {
-		let {canvas, rotate, orgImgW, imgHeight, imgWidth, imgTop, imgLeft, cropLeft, cropTop, image, containerW, containerH} = this
-		let {cropHeight, cropWidth, onCrop} = this.config
+	cutImage() {
+		let {canvas, rotate, orgImgW, imgHeight, imgWidth, imgTop, imgLeft, cutLeft, cutTop, image, containerW, containerH} = this
+		let {cutHeight, cutWidth, onCut} = this.config
 		let scale = imgWidth / orgImgW
 		let ctx = canvas.getContext('2d')
-		let sWidth = cropWidth / scale
-		let sHeight = cropHeight / scale
-		canvas.width = cropWidth
-		canvas.height = cropHeight
+		let sWidth = cutWidth / scale
+		let sHeight = cutHeight / scale
+		canvas.width = cutWidth
+		canvas.height = cutHeight
 		if (rotate === -1) {
-			let sx = toFixed((containerH - cropHeight - cropTop - (containerH - imgWidth) / 2) / scale)
-			let sy = toFixed((cropLeft - (containerW - imgHeight) / 2) / scale)
-			sWidth = cropHeight / scale
-			sHeight = cropWidth / scale
+			let sx = toFixed((containerH - cutHeight - cutTop - (containerH - imgWidth) / 2) / scale)
+			let sy = toFixed((cutLeft - (containerW - imgHeight) / 2) / scale)
+			sWidth = cutHeight / scale
+			sHeight = cutWidth / scale
 			ctx.rotate((90 * rotate * Math.PI) / 180)
-			ctx.drawImage(image, sx, sy, sWidth, sHeight, -cropHeight, 0, cropHeight, cropWidth)
+			ctx.drawImage(image, sx, sy, sWidth, sHeight, -cutHeight, 0, cutHeight, cutWidth)
 		} else if (rotate === -2) {
-			let sx = this.toFixed((containerW - cropLeft - cropWidth - (containerW - imgWidth) / 2) / scale)
-			let sy = this.toFixed((containerH - cropHeight - cropTop - (containerH - imgHeight) / 2) / scale)
+			let sx = this.toFixed((containerW - cutLeft - cutWidth - (containerW - imgWidth) / 2) / scale)
+			let sy = this.toFixed((containerH - cutHeight - cutTop - (containerH - imgHeight) / 2) / scale)
 			ctx.rotate((90 * rotate * Math.PI) / 180)
-			ctx.drawImage(image, sx, sy, sWidth, sHeight, -cropWidth, -cropHeight, cropWidth, cropHeight)
+			ctx.drawImage(image, sx, sy, sWidth, sHeight, -cutWidth, -cutHeight, cutWidth, cutHeight)
 		} else if (rotate === -3) {
-			let sx = this.toFixed((cropTop - (containerH - imgWidth) / 2) / scale)
-			let sy = this.toFixed((containerW - cropLeft - cropWidth - (containerW - imgHeight) / 2) / scale)
-			sWidth = cropHeight / scale
-			sHeight = cropWidth / scale
+			let sx = this.toFixed((cutTop - (containerH - imgWidth) / 2) / scale)
+			let sy = this.toFixed((containerW - cutLeft - cutWidth - (containerW - imgHeight) / 2) / scale)
+			sWidth = cutHeight / scale
+			sHeight = cutWidth / scale
 			ctx.rotate((90 * rotate * Math.PI) / 180)
-			ctx.drawImage(image, sx, sy, sWidth, sHeight, 0, -cropWidth, cropHeight, cropWidth)
+			ctx.drawImage(image, sx, sy, sWidth, sHeight, 0, -cutWidth, cutHeight, cutWidth)
 		} else {
-			let sx = (cropLeft - imgLeft) / scale
-			let sy = (cropTop - imgTop) / scale
-			ctx.drawImage(image, sx, sy, sWidth, sHeight, 0, 0, cropWidth, cropHeight)
+			let sx = (cutLeft - imgLeft) / scale
+			let sy = (cutTop - imgTop) / scale
+			ctx.drawImage(image, sx, sy, sWidth, sHeight, 0, 0, cutWidth, cutHeight)
 		}
-		let cropImgSrc = canvas.toDataURL('image/png')
-		if (isFunction(onCrop)) onCrop(cropImgSrc)
-		return cropImgSrc
+		let cutImgSrc = canvas.toDataURL('image/png')
+		if (isFunction(onCut)) onCut(cutImgSrc)
+		return cutImgSrc
 	}
 	/* 改变图片尺寸 */
 	changeImageSize(scale) {
@@ -373,8 +373,8 @@ export default class {
 				imgHeight = orgImgH * minScale
 			}
 		}
-		/* 图片不能小于cropperBox的尺寸 */
-		let res = this.adjustToCrop(imgWidth, imgHeight)
+		/* 图片不能小于cutterBox的尺寸 */
+		let res = this.adjustToCut(imgWidth, imgHeight)
 		imgWidth = toFixed(res.imgWidth)
 		imgHeight = toFixed(res.imgHeight)
 
@@ -388,7 +388,7 @@ export default class {
 		image.style.left = left + 'px'
 		this.imgTop = top
 		this.imgLeft = left
-		this.checkCropperBox()
+		this.checkCutterBox()
 		if (scale > 1 && isFunction(onManify)) onManify(this.config)
 		if (scale < 1 && isFunction(onReduce)) onReduce(this.config)
 	}
@@ -401,16 +401,16 @@ export default class {
 		}
 		image.style.transform = `rotate(${90 * rotate}deg)`
 		this.rotate = rotate
-		this.checkCropperBox()
+		this.checkCutterBox()
 	}
 	/* 初始化鼠标状态 */
 	initMouse(e) {
 		e.preventDefault()
-		if (!this.cropperIsEnter) return
-		let {cropBox, cursorEnums, container} = this
-		let {cropWidth, cropHeight, canChangeCropSize} = this.config
+		if (!this.cutterIsEnter) return
+		let {cutterBox, cursorEnums, container} = this
+		let {cutWidth, cutHeight, canChangeCutSize} = this.config
 		let {clientX, clientY} = e
-		let {top, left} = cropBox.getBoundingClientRect()
+		let {top, left} = cutterBox.getBoundingClientRect()
 		let offsetX = clientX - left
 		let offsetY = clientY - top
 		let size = 10
@@ -419,43 +419,43 @@ export default class {
 			if (offsetY < size && offsetY > -size) {
 				// 左上角
 				status = 1
-			} else if (offsetY >= size && offsetY <= cropHeight - size) {
+			} else if (offsetY >= size && offsetY <= cutHeight - size) {
 				// 左侧
 				status = 2
-			} else if (offsetY > cropHeight - size && offsetY < cropHeight + size) {
+			} else if (offsetY > cutHeight - size && offsetY < cutHeight + size) {
 				// 左下角
 				status = 3
 			}
-		} else if (offsetX >= size && offsetX <= cropWidth - size) {
+		} else if (offsetX >= size && offsetX <= cutWidth - size) {
 			if (offsetY < size && offsetY > -size) {
 				// 上
 				status = 4
-			} else if (offsetY > cropHeight - size && offsetY < cropHeight + size) {
+			} else if (offsetY > cutHeight - size && offsetY < cutHeight + size) {
 				// 下
 				status = 5
-			} else if (offsetY >= size && offsetY <= cropHeight - size) {
+			} else if (offsetY >= size && offsetY <= cutHeight - size) {
 				// 中间
 				status = 9
 			}
-		} else if (offsetX > cropWidth - size && offsetX < cropWidth + size) {
+		} else if (offsetX > cutWidth - size && offsetX < cutWidth + size) {
 			if (offsetY < size && offsetY > -size) {
 				// 右上角
 				status = 6
-			} else if (offsetY >= size && offsetY <= cropHeight - size) {
+			} else if (offsetY >= size && offsetY <= cutHeight - size) {
 				// 右侧
 				status = 7
-			} else if (offsetY > cropHeight - size && offsetY < cropHeight + size) {
+			} else if (offsetY > cutHeight - size && offsetY < cutHeight + size) {
 				// 右下角
 				status = 8
 			}
 		}
-		if (canChangeCropSize || (!canChangeCropSize && status === 9)) {
-			cropBox.style.cursor = cursorEnums[status] || 'default'
+		if (canChangeCutSize || (!canChangeCutSize && status === 9)) {
+			cutterBox.style.cursor = cursorEnums[status] || 'default'
 			this.dragStatus = status
 		}
-		if (offsetX < -size || offsetX > cropWidth + size || offsetY < -size || offsetY > cropHeight + size) {
-			this.cropperIsEnter = false
-			this.cropperIsDown = false
+		if (offsetX < -size || offsetX > cutWidth + size || offsetY < -size || offsetY > cutHeight + size) {
+			this.cutterIsEnter = false
+			this.cutterIsDown = false
 			container.onmousemove = null
 			container.onmousedown = null
 			container.onmouseup = null
@@ -464,74 +464,74 @@ export default class {
 	/* 移动鼠标改变尺寸和位置 */
 	handleResize(e) {
 		e.preventDefault()
-		let {cropWidth, cropHeight, minCropWidth} = this.config
-		let {cropTop, cropLeft, startPos, dragStatus, containerW, containerH} = this
+		let {cutWidth, cutHeight, mincutWidth} = this.config
+		let {cutTop, cutLeft, startPos, dragStatus, containerW, containerH} = this
 		let moveX = e.clientX - startPos.clientX
 		let moveY = e.clientY - startPos.clientY
 		if (dragStatus >= 1 && dragStatus <= 3) {
 			// 左侧
-			let newWidth = cropWidth - moveX
-			let newLeft = cropLeft + moveX
-			let newHeight = cropHeight
-			let newTop = cropTop
-			if (newWidth < minCropWidth) return
+			let newWidth = cutWidth - moveX
+			let newLeft = cutLeft + moveX
+			let newHeight = cutHeight
+			let newTop = cutTop
+			if (newWidth < mincutWidth) return
 			if (newLeft < 0) {
 				newLeft = 0
 			}
 			if (dragStatus === 1) {
 				// 左上角 与右上角一样
-				let res = this.resizeTop(cropHeight, cropTop, moveY)
+				let res = this.resizeTop(cutHeight, cutTop, moveY)
 				newHeight = res.newHeight
 				newTop = res.newTop
 			} else if (dragStatus === 3) {
-				let res = this.resizeBottom(cropHeight, cropTop, moveY)
+				let res = this.resizeBottom(cutHeight, cutTop, moveY)
 				newHeight = res.newHeight
 			}
 			this.setMaskStyle(newLeft, newTop, newWidth, newHeight)
 		} else if (dragStatus === 4) {
-			let res = this.resizeTop(cropHeight, cropTop, moveY)
+			let res = this.resizeTop(cutHeight, cutTop, moveY)
 			let newHeight = res.newHeight
 			let newTop = res.newTop
-			this.setMaskStyle(cropLeft, newTop, cropWidth, newHeight)
+			this.setMaskStyle(cutLeft, newTop, cutWidth, newHeight)
 		} else if (dragStatus === 5) {
-			let res = this.resizeBottom(cropHeight, cropTop, moveY)
+			let res = this.resizeBottom(cutHeight, cutTop, moveY)
 			let newHeight = res.newHeight
-			this.setMaskStyle(cropLeft, cropTop, cropWidth, newHeight)
+			this.setMaskStyle(cutLeft, cutTop, cutWidth, newHeight)
 		} else if (dragStatus >= 6 && dragStatus <= 8) {
 			// 右侧
-			let newWidth = cropWidth + moveX
-			let newTop = cropTop
-			let newHeight = cropHeight
-			if (newWidth < minCropWidth) return
-			if (cropLeft + newWidth > containerW) {
-				newWidth = containerW - cropWidth
+			let newWidth = cutWidth + moveX
+			let newTop = cutTop
+			let newHeight = cutHeight
+			if (newWidth < mincutWidth) return
+			if (cutLeft + newWidth > containerW) {
+				newWidth = containerW - cutWidth
 			}
 			if (dragStatus === 6) {
 				// 右上角
-				let res = this.resizeTop(cropHeight, cropTop, moveY)
+				let res = this.resizeTop(cutHeight, cutTop, moveY)
 				newHeight = res.newHeight
 				newTop = res.newTop
 			} else if (dragStatus === 8) {
 				// 右下角
-				let res = this.resizeBottom(cropHeight, cropTop, moveY)
+				let res = this.resizeBottom(cutHeight, cutTop, moveY)
 				newHeight = res.newHeight
 			}
-			this.setMaskStyle(cropLeft, newTop, newWidth, newHeight)
+			this.setMaskStyle(cutLeft, newTop, newWidth, newHeight)
 		} else if (dragStatus === 9) {
-			let newLeft = cropLeft + moveX
-			let newTop = cropTop + moveY
+			let newLeft = cutLeft + moveX
+			let newTop = cutTop + moveY
 			if (newTop < 0) newTop = 0
 			if (newLeft < 0) newLeft = 0
-			if (newLeft + cropWidth > containerW) newLeft = containerW - cropWidth
-			if (newTop + cropHeight > containerH) newTop = containerH - cropHeight
-			this.setMaskStyle(newLeft, newTop, cropWidth, cropHeight)
+			if (newLeft + cutWidth > containerW) newLeft = containerW - cutWidth
+			if (newTop + cutHeight > containerH) newTop = containerH - cutHeight
+			this.setMaskStyle(newLeft, newTop, cutWidth, cutHeight)
 		}
 		this.startPos = {clientX: e.clientX, clientY: e.clientY}
 	}
-	/* 判断cropperbox的位置是否超过image */
-	checkCropperBox() {
-		let {cropHeight, cropWidth} = this.config
-		let {cropBox, cropTop, cropLeft, imgTop, imgLeft, imgHeight, imgWidth, bottomMask, topMask, rightMask, leftMask, containerW, containerH, rotate} = this
+	/* 判断cuttererbox的位置是否超过image */
+	checkCutterBox() {
+		let {cutHeight, cutWidth} = this.config
+		let {cutterBox, cutTop, cutLeft, imgTop, imgLeft, imgHeight, imgWidth, bottomMask, topMask, rightMask, leftMask, containerW, containerH, rotate} = this
 		if (rotate % 2 !== 0) {
 			imgLeft = (containerW - imgHeight) / 2
 			imgTop = (containerH - imgWidth) / 2
@@ -539,18 +539,18 @@ export default class {
 			imgWidth = imgHeight
 			imgHeight = tmp
 		}
-		if (cropWidth > imgWidth) cropWidth = imgWidth
-		if (cropHeight > imgHeight) cropHeight = imgHeight
-		if (cropLeft < imgLeft) cropLeft = imgLeft
-		if (cropLeft + cropWidth > imgLeft + imgWidth) cropLeft = imgLeft + imgWidth - cropWidth
-		if (cropTop < imgTop) cropTop = imgTop
-		if (cropTop + cropHeight > imgTop + imgHeight) cropTop = imgTop + imgHeight - cropHeight
+		if (cutWidth > imgWidth) cutWidth = imgWidth
+		if (cutHeight > imgHeight) cutHeight = imgHeight
+		if (cutLeft < imgLeft) cutLeft = imgLeft
+		if (cutLeft + cutWidth > imgLeft + imgWidth) cutLeft = imgLeft + imgWidth - cutWidth
+		if (cutTop < imgTop) cutTop = imgTop
+		if (cutTop + cutHeight > imgTop + imgHeight) cutTop = imgTop + imgHeight - cutHeight
 		let animateStyle = 'all 0.3s'
-		let array = [cropBox, bottomMask, topMask, rightMask, leftMask]
+		let array = [cutterBox, bottomMask, topMask, rightMask, leftMask]
 		array.forEach((el) => {
 			el.style.transition = animateStyle
 		})
-		this.setMaskStyle(cropLeft, cropTop, cropWidth, cropHeight)
+		this.setMaskStyle(cutLeft, cutTop, cutWidth, cutHeight)
 		setTimeout(() => {
 			array.forEach((el) => {
 				el.style.transition = ''
@@ -560,50 +560,50 @@ export default class {
 	handleMouseDown(e) {
 		this.startPos = {clientX: e.clientX, clientY: e.clientY}
 	}
-	resizeTop(cropHeight, cropTop, moveY) {
-		let {minCropHeight} = this.config
-		let newHeight = cropHeight - moveY
-		let newTop = cropTop + moveY
-		if (newHeight < minCropHeight) return
+	resizeTop(cutHeight, cutTop, moveY) {
+		let {mincutHeight} = this.config
+		let newHeight = cutHeight - moveY
+		let newTop = cutTop + moveY
+		if (newHeight < mincutHeight) return
 		if (newTop < 0) {
 			newTop = 0
 		}
 		return {newTop, newHeight}
 	}
-	resizeBottom(cropHeight, cropTop, moveY) {
+	resizeBottom(cutHeight, cutTop, moveY) {
 		let {containerH} = this
-		let {minCropHeight} = this.config
-		let newHeight = cropHeight + moveY
-		if (newHeight < minCropHeight) return
-		if (cropTop + newHeight > containerH) {
-			newHeight = containerH - cropTop
+		let {mincutHeight} = this.config
+		let newHeight = cutHeight + moveY
+		if (newHeight < mincutHeight) return
+		if (cutTop + newHeight > containerH) {
+			newHeight = containerH - cutTop
 		}
 		return {newHeight}
 	}
 	/* 图片尺寸与裁剪不能小于裁剪区尺寸 */
-	adjustToCrop(imgWidth, imgHeight) {
+	adjustToCut(imgWidth, imgHeight) {
 		let {orgImgW, orgImgH} = this
-		let {cropWidth, cropHeight} = this.config
+		let {cutWidth, cutHeight} = this.config
 		let imgRatio = orgImgW / orgImgH
-		let cropRatio = cropWidth / cropHeight
-		if (imgHeight < cropHeight) {
+		let cutRatio = cutWidth / cutHeight
+		if (imgHeight < cutHeight) {
 			this.config.canReduce = false
-			if (imgWidth < cropWidth) {
-				if (imgRatio > cropRatio) {
-					imgHeight = cropHeight
+			if (imgWidth < cutWidth) {
+				if (imgRatio > cutRatio) {
+					imgHeight = cutHeight
 					imgWidth = imgHeight * imgRatio
 				} else {
-					imgWidth = cropWidth
+					imgWidth = cutWidth
 					imgHeight = imgWidth / imgRatio
 				}
 			} else {
-				imgHeight = cropHeight
+				imgHeight = cutHeight
 				imgWidth = imgHeight * imgRatio
 			}
 		} else {
-			if (imgWidth < cropWidth) {
+			if (imgWidth < cutWidth) {
 				this.config.canReduce = false
-				imgWidth = cropWidth
+				imgWidth = cutWidth
 				imgHeight = imgWidth / imgRatio
 			}
 		}

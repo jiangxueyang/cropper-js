@@ -1,51 +1,51 @@
 {
-	"name": "cutterjs",
-	"version": "1.0.1",
-	"description": "javascript cutterjs cropperjs image tool",
-	"main": "dist/cutterjs.min.js",
-	"scripts": {
-		"watch": "rollup -w -c bin/rollup.config.dev.js --enviroment NODE_ENV:develop",
-		"test": "rollup  -c bin/rollup.config.test.js --enviroment NODE_ENV:test",
-		"build": "rollup -c bin/rollup.config.production.js --enviroment NODE_ENV:production"
-	},
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/jiangxueyang/cutterjs.git"
-	},
-	"author": "jiangxueyang",
-	"license": "MIT",
-	"keywords": [
-		"image",
-		"cutterjs",
-		"cropper",
-		"cropper-js",
-		"png",
-		"jpg",
-		"html",
-		"javascript",
-		"canvas"
-	],
-	"devDependencies": {
-		"@babel/core": "^7.10.5",
-		"@babel/preset-env": "^7.10.4",
-		"babel-eslint": "^10.1.0",
-		"eslint": "^7.5.0",
-		"eslint-config-standard": "^14.1.1",
-		"eslint-loader": "^4.0.2",
-		"eslint-plugin-import": "^2.22.0",
-		"eslint-plugin-node": "^11.1.0",
-		"eslint-plugin-promise": "^4.2.1",
-		"eslint-plugin-standard": "^4.0.1",
-		"install": "^0.13.0",
-		"rollup": "^2.23.0",
-		"rollup-plugin-alias": "^2.2.0",
-		"rollup-plugin-babel": "^4.4.0",
-		"rollup-plugin-banner": "^0.2.1",
-		"rollup-plugin-commonjs": "^10.1.0",
-		"rollup-plugin-eslint": "^7.0.0",
-		"rollup-plugin-inline-source": "^1.0.2",
-		"rollup-plugin-node-resolve": "^5.2.0",
-		"rollup-plugin-progress": "^1.1.2",
-		"rollup-plugin-uglify": "^6.0.4"
-	}
+  "name": "cutterjs",
+  "version": "1.0.1",
+  "description": "javascript cutterjs cropperjs image tool",
+  "main": "dist/cutterjs.min.js",
+  "scripts": {
+    "watch": "rollup -w -c bin/rollup.config.dev.js --enviroment NODE_ENV:develop",
+    "test": "rollup  -c bin/rollup.config.test.js --enviroment NODE_ENV:test",
+    "build": "rollup -c bin/rollup.config.production.js --enviroment NODE_ENV:production"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jiangxueyang/cutterjs.git"
+  },
+  "author": "jiangxueyang",
+  "license": "MIT",
+  "keywords": [
+    "image",
+    "cutterjs",
+    "cropper",
+    "cropper-js",
+    "png",
+    "jpg",
+    "html",
+    "javascript",
+    "canvas"
+  ],
+  "devDependencies": {
+    "@babel/core": "^7.11.0",
+    "@babel/preset-env": "^7.10.4",
+    "babel-eslint": "^10.1.0",
+    "eslint": "^7.5.0",
+    "eslint-config-standard": "^14.1.1",
+    "eslint-loader": "^4.0.2",
+    "eslint-plugin-import": "^2.22.0",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^4.2.1",
+    "eslint-plugin-standard": "^4.0.1",
+    "install": "^0.13.0",
+    "rollup": "^2.23.0",
+    "rollup-plugin-alias": "^2.2.0",
+    "rollup-plugin-babel": "^4.4.0",
+    "rollup-plugin-banner": "^0.2.1",
+    "rollup-plugin-commonjs": "^10.1.0",
+    "rollup-plugin-eslint": "^7.0.0",
+    "rollup-plugin-inline-source": "^1.0.2",
+    "rollup-plugin-node-resolve": "^5.2.0",
+    "rollup-plugin-progress": "^1.1.2",
+    "rollup-plugin-uglify": "^6.0.4"
+  }
 }

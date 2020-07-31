@@ -2,7 +2,7 @@
 	"name": "cutterjs",
 	"version": "1.0.1",
 	"description": "javascript cutterjs cropperjs image tool",
-	"main": "dist/cropper.min.js",
+	"main": "dist/cutterjs.min.js",
 	"scripts": {
 		"watch": "rollup -w -c bin/rollup.config.dev.js --enviroment NODE_ENV:develop",
 		"test": "rollup  -c bin/rollup.config.test.js --enviroment NODE_ENV:test",

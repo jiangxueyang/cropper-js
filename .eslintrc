@@ -1,0 +1,36 @@
+{
+	"root": true,
+	"parser": "babel-eslint",
+	"extends": "standard",
+	"parserOptions": {
+		"sourceType": "module"
+	},
+	"ecmaFeatures": {
+		"globalReturn": true,
+		"jsx": true,
+		"modules": true
+	},
+	"env": {
+		"browser": true,
+		"es6": true
+	},
+	"rules": {
+		"arrow-parens": 0,
+		"indent": "off",
+		"no-tabs": 0,
+		"no-mixed-spaces-and-tabs": "off",
+		"space-before-function-paren": "off",
+		"semi": "off",
+		"prefer-const": "off",
+		"no-unused-vars": "error",
+		"object-curly-spacing": "off",
+		"quote-props": "off",
+		"lines-between-class-members": "off",
+		"no-prototype-builtins": "off",
+		"quotes": "off",
+		"space-before-blocks": "off",
+		"camelcase": "off",
+		"spaced-comment": "off"
+	},
+	"globals": {}
+}

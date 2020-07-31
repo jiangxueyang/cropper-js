@@ -1,3 +1,3 @@
-import Cropper from './components/cropper'
+import Cutter from './components/cutter'
 
-export default Cropper
+export default Cutter

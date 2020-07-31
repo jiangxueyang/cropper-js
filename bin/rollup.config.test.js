@@ -10,10 +10,10 @@ import rollupInlineSource from 'rollup-plugin-inline-source'
 export default {
     input: 'src/index.js',
     output: {
-        file: 'dist/cropper.js',
+        file: 'dist/cutterjs.js',
         format: 'umd',
-        name: 'CropperJS',
-        moduleName: 'CropperJS'
+        name: 'Cutter',
+        moduleName: 'Cutter'
     },
     plugins: [
         resolve(),

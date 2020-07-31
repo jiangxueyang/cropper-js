@@ -12,10 +12,10 @@ const vesion = process.env.VERSION || require('../package.json').version
 export default {
     input: 'src/index.js',
     output: {
-        file: 'dist/cropper.min.js',
+        file: 'dist/cutterjs.min.js',
         format: 'umd',
-        name: 'CropperJS',
-        moduleName: 'CropperJS'
+        name: 'Cutter',
+        moduleName: 'Cutter'
     },
     plugins: [
         resolve(),

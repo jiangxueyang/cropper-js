@@ -9,10 +9,10 @@ import progress from 'rollup-plugin-progress'
 export default {
     input: 'src/index.js',
     output: {
-        file: 'example/lib/cropper.js',
+        file: 'example/lib/cutterjs.js',
         format: 'umd',
-        name: 'CropperJS',
-        moduleName: 'CropperJS'
+        name: 'Cutter',
+        moduleName: 'Cutter'
     },
     plugins: [
         resolve(),

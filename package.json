@@ -1,7 +1,7 @@
 {
-	"name": "cropper-js",
+	"name": "cutterjs",
 	"version": "1.0.0",
-	"description": "javascript crop image tool",
+	"description": "javascript cutterjs cropperjs image tool",
 	"main": "dist/cropper.min.js",
 	"scripts": {
 		"watch": "rollup -w -c bin/rollup.config.dev.js --enviroment NODE_ENV:develop",
@@ -10,13 +10,13 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/jiangxueyang/cropper-js.git"
+		"url": "https://github.com/jiangxueyang/cutterjs.git"
 	},
 	"author": "jiangxueyang",
 	"license": "MIT",
 	"keywords": [
 		"image",
-		"crop",
+		"cutterjs",
 		"cropper",
 		"cropper-js",
 		"png",

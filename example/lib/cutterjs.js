@@ -137,31 +137,33 @@
         // 裁剪区域默认宽度，单位px
         cutHeight: 200,
         // 裁剪区域默认高度，单位px
-        mincutWidth: 16,
+        minCutWidth: 16,
         // 裁剪区域最小宽度，单位px
-        mincutHeight: 16,
+        minCutHeight: 16,
         // 裁剪区域最小高度，单位px
-        maxScale: 3,
+        maxScaleRatio: 3,
         // 图片能放大的最大倍数，相对图片原始尺寸
-        minScale: 0.1,
+        maxZoomRatio: 0.1,
         // 图片能缩小的最小倍数，相对图片原始尺寸
-        scale: 1.2,
-        // 每次放大的倍数，必须大于1，缩小为1/scale
-        canMagnify: true,
+        ratio: 1.2,
+        // 每次放大的倍数，必须大于1，缩小为1/ratio
+        scalable: false,
         // boolean 是否可放大
-        canReduce: true,
+        zoomable: false,
         // boolean 是否可缩小
-        canRotate: true,
+        rotatable: false,
         // boolean 能否逆时针旋转图片
-        canChangeCutSize: true,
+        cutBoxResizable: false,
         // boolean 能否改变裁剪区域大小，默认true
         imageSrc: '',
         // 图片资源, 必传
+        outputType: 'png',
+        // 输出的图片资源类型，png/jpeg
         containerEl: '',
         // 裁剪操作容器，图片与裁剪框将展示在这个区域，可为类名、id
-        mangnifyEl: '',
+        scaleEl: '',
         // 放大图片的dom元素，可为类名、id
-        reduceEl: '',
+        zoomEl: '',
         // 缩小图片的dom元素，可为类名、id
         cutEl: '',
         // 触发裁剪的dom元素，可为类名、id
@@ -169,7 +171,11 @@
         // 触发逆时针旋转的dom元素，可为类名、id
         onRender: null,
         // 渲染成功回调
-        onCut: null // 裁剪成功回调
+        onCut: null,
+        // 裁剪成功回调,
+        onScale: null,
+        // 放大图片的回调时间
+        onZoom: null // 缩小图片的回调
 
       };
       if (!this.checkConfig(config)) return;
@@ -183,7 +189,7 @@
       value: function checkConfig(config) {
         if (isEmpty(config)) return false;
         if (!isObject(config)) return warn('配置信息格式不合法');
-        var arr = ['cutWidth', 'cutHeight', 'mincutWidth', 'mincutHeight', 'maxScale', 'minScale', 'scale'];
+        var arr = ['cutWidth', 'cutHeight', 'minCutWidth', 'minCutHeight', 'maxScaleRatio', 'maxZoomRatio', 'ratio'];
         arr.forEach(function (key) {
           if (config.hasOwnProperty(key)) {
             config[key] = parseFloat(config[key]);
@@ -192,29 +198,29 @@
         config = _objectSpread2(_objectSpread2({}, this.defaultConfig), config);
         var _config = config,
             containerEl = _config.containerEl,
-            mincutWidth = _config.mincutWidth,
-            mincutHeight = _config.mincutHeight,
+            minCutWidth = _config.minCutWidth,
+            minCutHeight = _config.minCutHeight,
             cutWidth = _config.cutWidth,
             cutHeight = _config.cutHeight,
-            maxScale = _config.maxScale,
-            minScale = _config.minScale,
-            canReduce = _config.canReduce,
-            canMagnify = _config.canMagnify; // 判断containerEl
+            maxScaleRatio = _config.maxScaleRatio,
+            maxZoomRatio = _config.maxZoomRatio,
+            zoomable = _config.zoomable,
+            scalable = _config.scalable; // 判断containerEl
 
         if (isEmpty(containerEl)) return warn('containerEl未配置');
         var container = document.querySelector(containerEl);
         if (!container) return warn(containerEl + '的dom元素不存在');
-        this.container = container; //判断mincutWidth, mincutHeight
+        this.container = container; //判断minCutWidth, minCutHeight
 
-        if (config.canChangeCutSize) {
-          if (!isEmpty(mincutHeight)) {
-            if (!isNumber(mincutHeight)) return warn('mincutHeight必须为数值');
-            if (Number(mincutHeight) < 1) return warn('mincutHeight不能小于1');
+        if (config.cutBoxResizable) {
+          if (!isEmpty(minCutHeight)) {
+            if (!isNumber(minCutHeight)) return warn('minCutHeight必须为数值');
+            if (Number(minCutHeight) < 1) return warn('minCutHeight不能小于1');
           }
 
-          if (!isEmpty(mincutWidth)) {
-            if (!isNumber(mincutWidth)) return warn('mincutWidth必须为数值');
-            if (Number(mincutWidth) < 1) return warn('mincutWidth不能小于1');
+          if (!isEmpty(minCutWidth)) {
+            if (!isNumber(minCutWidth)) return warn('minCutWidth必须为数值');
+            if (Number(minCutWidth) < 1) return warn('minCutWidth不能小于1');
           }
         } // 判断cutWidth， cutHeight
 
@@ -230,40 +236,40 @@
         } // 判断放大缩小相关参数
 
 
-        if (canMagnify) {
-          if (!isEmpty(maxScale)) {
-            if (!isNumber(maxScale)) return warn('maxScale必须为数值');
-            if (Number(maxScale) < 1) return warn('maxScale不能小于1');
+        if (scalable) {
+          if (!isEmpty(maxScaleRatio)) {
+            if (!isNumber(maxScaleRatio)) return warn('maxScaleRatio必须为数值');
+            if (Number(maxScaleRatio) < 1) return warn('maxScaleRatio不能小于1');
           }
 
           var _config2 = config,
-              mangnifyEl = _config2.mangnifyEl;
-          if (isEmpty(mangnifyEl)) return warn('mangnifyEl未配置');
-          var mangnifyNode = document.querySelector(mangnifyEl);
-          if (!mangnifyNode) return warn(mangnifyEl + '的dom元素不存在');
-          this.mangnifyNode = mangnifyNode;
+              scaleEl = _config2.scaleEl;
+          if (isEmpty(scaleEl)) return warn('scaleEl未配置');
+          var scaleNode = document.querySelector(scaleEl);
+          if (!scaleNode) return warn(scaleEl + '的dom元素不存在');
+          this.scaleNode = scaleNode;
         }
 
-        if (canReduce) {
-          if (!isEmpty(minScale)) {
-            if (!isNumber(minScale)) return warn('minScale必须为数值');
-            if (Number(minScale) >= 1) return warn('minScale必须小于1');
+        if (zoomable) {
+          if (!isEmpty(maxZoomRatio)) {
+            if (!isNumber(maxZoomRatio)) return warn('maxZoomRatio必须为数值');
+            if (Number(maxZoomRatio) >= 1) return warn('maxZoomRatio必须小于1');
           }
 
           var _config3 = config,
-              reduceEl = _config3.reduceEl;
-          if (isEmpty(reduceEl)) return warn('reduceEl未配置');
-          var reduceNode = document.querySelector(reduceEl);
-          if (!reduceNode) return warn(reduceEl + '的dom元素不存在');
-          this.reduceNode = reduceNode;
+              zoomEl = _config3.zoomEl;
+          if (isEmpty(zoomEl)) return warn('zoomEl未配置');
+          var zoomNode = document.querySelector(zoomEl);
+          if (!zoomNode) return warn(zoomEl + '的dom元素不存在');
+          this.zoomNode = zoomNode;
         }
 
-        if (canMagnify || canReduce) {
-          var scale = this.scale;
+        if (scalable || zoomable) {
+          var ratio = this.ratio;
 
-          if (!isEmpty(scale)) {
-            if (!isNumber(scale)) return warn('scale必须为数值');
-            if (Number(maxScale) <= 1) return warn('scale必须大于1');
+          if (!isEmpty(ratio)) {
+            if (!isNumber(ratio)) return warn('scale必须为数值');
+            if (Number(maxScaleRatio) <= 1) return warn('scale必须大于1');
           }
         }
         /* 触发裁剪的dom校验 */
@@ -286,10 +292,10 @@
         /* 判断是否可旋转 */
 
         var _config6 = config,
-            canRotate = _config6.canRotate,
+            rotatable = _config6.rotatable,
             rotateEl = _config6.rotateEl;
 
-        if (canRotate) {
+        if (rotatable) {
           if (isEmpty(rotateEl)) return warn('rotateEl未配置');
           var rotateNode = document.querySelector(rotateEl);
           if (!rotateNode) return warn(rotateEl + '的dom不存在');
@@ -518,33 +524,33 @@
         };
 
         var _this$config2 = this.config,
-            canRotate = _this$config2.canRotate,
-            canMagnify = _this$config2.canMagnify,
-            canReduce = _this$config2.canReduce,
-            scale = _this$config2.scale;
+            rotatable = _this$config2.rotatable,
+            scalable = _this$config2.scalable,
+            zoomable = _this$config2.zoomable,
+            ratio = _this$config2.ratio;
         /* 放大 */
 
-        if (canMagnify && this.mangnifyNode) {
-          this.mangnifyNode.onclick = function () {
-            if (!_this3.config.canMagnify) return;
+        if (scalable && this.scaleNode) {
+          this.scaleNode.onclick = function () {
+            if (!_this3.config.scalable) return;
 
-            _this3.changeImageSize(scale);
+            _this3.changeImageSize(ratio);
           };
         }
         /* 缩小 */
 
 
-        if (canReduce && this.reduceNode) {
-          this.reduceNode.onclick = function () {
-            if (!_this3.config.canReduce) return;
+        if (zoomable && this.zoomNode) {
+          this.zoomNode.onclick = function () {
+            if (!_this3.config.zoomable) return;
 
-            _this3.changeImageSize(1 / scale);
+            _this3.changeImageSize(1 / ratio);
           };
         }
         /* 逆时针旋转图片 */
 
 
-        if (canRotate && this.rotateNode) {
+        if (rotatable && this.rotateNode) {
           this.rotateNode.onclick = function () {
             _this3.rotateImage();
           };
@@ -578,46 +584,47 @@
         var _this$config3 = this.config,
             cutHeight = _this$config3.cutHeight,
             cutWidth = _this$config3.cutWidth,
-            onCut = _this$config3.onCut;
-        var scale = imgWidth / orgImgW;
+            onCut = _this$config3.onCut,
+            outputType = _this$config3.outputType;
+        var ratio = imgWidth / orgImgW;
         var ctx = canvas.getContext('2d');
-        var sWidth = cutWidth / scale;
-        var sHeight = cutHeight / scale;
+        var sWidth = cutWidth / ratio;
+        var sHeight = cutHeight / ratio;
         canvas.width = cutWidth;
         canvas.height = cutHeight;
 
         if (rotate === -1) {
-          var sx = toFixed((containerH - cutHeight - cutTop - (containerH - imgWidth) / 2) / scale);
-          var sy = toFixed((cutLeft - (containerW - imgHeight) / 2) / scale);
-          sWidth = cutHeight / scale;
-          sHeight = cutWidth / scale;
+          var sx = toFixed((containerH - cutHeight - cutTop - (containerH - imgWidth) / 2) / ratio);
+          var sy = toFixed((cutLeft - (containerW - imgHeight) / 2) / ratio);
+          sWidth = cutHeight / ratio;
+          sHeight = cutWidth / ratio;
           ctx.rotate(90 * rotate * Math.PI / 180);
           ctx.drawImage(image, sx, sy, sWidth, sHeight, -cutHeight, 0, cutHeight, cutWidth);
         } else if (rotate === -2) {
-          var _sx = this.toFixed((containerW - cutLeft - cutWidth - (containerW - imgWidth) / 2) / scale);
+          var _sx = this.toFixed((containerW - cutLeft - cutWidth - (containerW - imgWidth) / 2) / ratio);
 
-          var _sy = this.toFixed((containerH - cutHeight - cutTop - (containerH - imgHeight) / 2) / scale);
+          var _sy = this.toFixed((containerH - cutHeight - cutTop - (containerH - imgHeight) / 2) / ratio);
 
           ctx.rotate(90 * rotate * Math.PI / 180);
           ctx.drawImage(image, _sx, _sy, sWidth, sHeight, -cutWidth, -cutHeight, cutWidth, cutHeight);
         } else if (rotate === -3) {
-          var _sx2 = this.toFixed((cutTop - (containerH - imgWidth) / 2) / scale);
+          var _sx2 = this.toFixed((cutTop - (containerH - imgWidth) / 2) / ratio);
 
-          var _sy2 = this.toFixed((containerW - cutLeft - cutWidth - (containerW - imgHeight) / 2) / scale);
+          var _sy2 = this.toFixed((containerW - cutLeft - cutWidth - (containerW - imgHeight) / 2) / ratio);
 
-          sWidth = cutHeight / scale;
-          sHeight = cutWidth / scale;
+          sWidth = cutHeight / ratio;
+          sHeight = cutWidth / ratio;
           ctx.rotate(90 * rotate * Math.PI / 180);
           ctx.drawImage(image, _sx2, _sy2, sWidth, sHeight, 0, -cutWidth, cutHeight, cutWidth);
         } else {
-          var _sx3 = (cutLeft - imgLeft) / scale;
+          var _sx3 = (cutLeft - imgLeft) / ratio;
 
-          var _sy3 = (cutTop - imgTop) / scale;
+          var _sy3 = (cutTop - imgTop) / ratio;
 
           ctx.drawImage(image, _sx3, _sy3, sWidth, sHeight, 0, 0, cutWidth, cutHeight);
         }
 
-        var cutImgSrc = canvas.toDataURL('image/png');
+        var cutImgSrc = canvas.toDataURL("image/".concat(outputType));
         if (isFunction(onCut)) onCut(cutImgSrc);
         return cutImgSrc;
       }
@@ -625,7 +632,7 @@
 
     }, {
       key: "changeImageSize",
-      value: function changeImageSize(scale) {
+      value: function changeImageSize(ratio) {
         var imgWidth = this.imgWidth,
             orgImgW = this.orgImgW,
             orgImgH = this.orgImgH,
@@ -634,30 +641,30 @@
             containerW = this.containerW,
             image = this.image;
         var _this$config4 = this.config,
-            maxScale = _this$config4.maxScale,
-            minScale = _this$config4.minScale,
-            onManify = _this$config4.onManify,
-            onReduce = _this$config4.onReduce;
-        imgWidth *= scale;
-        imgHeight *= scale;
+            maxScaleRatio = _this$config4.maxScaleRatio,
+            maxZoomRatio = _this$config4.maxZoomRatio,
+            onScale = _this$config4.onScale,
+            onZoom = _this$config4.onZoom;
+        imgWidth *= ratio;
+        imgHeight *= ratio;
 
-        if (scale > 1) {
-          this.config.canReduce = true;
+        if (ratio > 1) {
+          this.config.zoomable = true;
           /* 不能超过最大放大比例 */
 
-          if (imgWidth / orgImgW > maxScale) {
-            this.config.canMagnify = false;
-            imgWidth = orgImgW * maxScale;
-            imgHeight = orgImgH * maxScale;
+          if (imgWidth / orgImgW > maxScaleRatio) {
+            this.config.scalable = false;
+            imgWidth = orgImgW * maxScaleRatio;
+            imgHeight = orgImgH * maxScaleRatio;
           }
         } else {
-          this.config.canMagnify = true;
+          this.config.scalable = true;
           /* 不能小于最小缩小比例 */
 
-          if (imgWidth / orgImgW < minScale) {
-            this.containerH.canReduce = false;
-            imgWidth = orgImgW * minScale;
-            imgHeight = orgImgH * minScale;
+          if (imgWidth / orgImgW < maxZoomRatio) {
+            this.containerH.zoomable = false;
+            imgWidth = orgImgW * maxZoomRatio;
+            imgHeight = orgImgH * maxZoomRatio;
           }
         }
         /* 图片不能小于cutterBox的尺寸 */
@@ -677,8 +684,8 @@
         this.imgTop = top;
         this.imgLeft = left;
         this.checkCutterBox();
-        if (scale > 1 && isFunction(onManify)) onManify(this.config);
-        if (scale < 1 && isFunction(onReduce)) onReduce(this.config);
+        if (ratio > 1 && isFunction(onScale)) onScale(this.config);
+        if (ratio < 1 && isFunction(onZoom)) onZoom(this.config);
       }
       /* 逆时针旋转图片 */
 
@@ -710,7 +717,7 @@
         var _this$config5 = this.config,
             cutWidth = _this$config5.cutWidth,
             cutHeight = _this$config5.cutHeight,
-            canChangeCutSize = _this$config5.canChangeCutSize;
+            cutBoxResizable = _this$config5.cutBoxResizable;
         var clientX = e.clientX,
             clientY = e.clientY;
 
@@ -758,7 +765,7 @@
           }
         }
 
-        if (canChangeCutSize || !canChangeCutSize && status === 9) {
+        if (cutBoxResizable || !cutBoxResizable && status === 9) {
           cutterBox.style.cursor = cursorEnums[status] || 'default';
           this.dragStatus = status;
         }
@@ -780,7 +787,7 @@
         var _this$config6 = this.config,
             cutWidth = _this$config6.cutWidth,
             cutHeight = _this$config6.cutHeight,
-            mincutWidth = _this$config6.mincutWidth;
+            minCutWidth = _this$config6.minCutWidth;
         var cutTop = this.cutTop,
             cutLeft = this.cutLeft,
             startPos = this.startPos,
@@ -796,7 +803,7 @@
           var newLeft = cutLeft + moveX;
           var newHeight = cutHeight;
           var newTop = cutTop;
-          if (newWidth < mincutWidth) return;
+          if (newWidth < minCutWidth) return;
 
           if (newLeft < 0) {
             newLeft = 0;
@@ -831,7 +838,7 @@
 
           var _newTop2 = cutTop;
           var _newHeight3 = cutHeight;
-          if (_newWidth < mincutWidth) return;
+          if (_newWidth < minCutWidth) return;
 
           if (cutLeft + _newWidth > containerW) {
             _newWidth = containerW - cutWidth;
@@ -928,10 +935,10 @@
     }, {
       key: "resizeTop",
       value: function resizeTop(cutHeight, cutTop, moveY) {
-        var mincutHeight = this.config.mincutHeight;
+        var minCutHeight = this.config.minCutHeight;
         var newHeight = cutHeight - moveY;
         var newTop = cutTop + moveY;
-        if (newHeight < mincutHeight) return;
+        if (newHeight < minCutHeight) return;
 
         if (newTop < 0) {
           newTop = 0;
@@ -946,9 +953,9 @@
       key: "resizeBottom",
       value: function resizeBottom(cutHeight, cutTop, moveY) {
         var containerH = this.containerH;
-        var mincutHeight = this.config.mincutHeight;
+        var minCutHeight = this.config.minCutHeight;
         var newHeight = cutHeight + moveY;
-        if (newHeight < mincutHeight) return;
+        if (newHeight < minCutHeight) return;
 
         if (cutTop + newHeight > containerH) {
           newHeight = containerH - cutTop;
@@ -972,7 +979,7 @@
         var cutRatio = cutWidth / cutHeight;
 
         if (imgHeight < cutHeight) {
-          this.config.canReduce = false;
+          this.config.zoomable = false;
 
           if (imgWidth < cutWidth) {
             if (imgRatio > cutRatio) {
@@ -988,7 +995,7 @@
           }
         } else {
           if (imgWidth < cutWidth) {
-            this.config.canReduce = false;
+            this.config.zoomable = false;
             imgWidth = cutWidth;
             imgHeight = imgWidth / imgRatio;
           }

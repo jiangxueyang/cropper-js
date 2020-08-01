@@ -11,23 +11,26 @@ export default class {
 		this.defaultConfig = {
 			cutWidth: 200, // 裁剪区域默认宽度，单位px
 			cutHeight: 200, // 裁剪区域默认高度，单位px
-			mincutWidth: 16, // 裁剪区域最小宽度，单位px
-			mincutHeight: 16, // 裁剪区域最小高度，单位px
-			maxScale: 3, // 图片能放大的最大倍数，相对图片原始尺寸
-			minScale: 0.1, // 图片能缩小的最小倍数，相对图片原始尺寸
-			scale: 1.2, // 每次放大的倍数，必须大于1，缩小为1/scale
-			canMagnify: true, // boolean 是否可放大
-			canReduce: true, // boolean 是否可缩小
-			canRotate: true, // boolean 能否逆时针旋转图片
-			canChangeCutSize: true, // boolean 能否改变裁剪区域大小，默认true
+			minCutWidth: 16, // 裁剪区域最小宽度，单位px
+			minCutHeight: 16, // 裁剪区域最小高度，单位px
+			maxScaleRatio: 3, // 图片能放大的最大倍数，相对图片原始尺寸
+			maxZoomRatio: 0.1, // 图片能缩小的最小倍数，相对图片原始尺寸
+			ratio: 1.2, // 每次放大的倍数，必须大于1，缩小为1/ratio
+			scalable: false, // boolean 是否可放大
+			zoomable: false, // boolean 是否可缩小
+			rotatable: false, // boolean 能否逆时针旋转图片
+			cutBoxResizable: false, // boolean 能否改变裁剪区域大小，默认true
 			imageSrc: '', // 图片资源, 必传
+			outputType: 'png', // 输出的图片资源类型，png/jpeg
 			containerEl: '', // 裁剪操作容器，图片与裁剪框将展示在这个区域，可为类名、id
-			mangnifyEl: '', // 放大图片的dom元素，可为类名、id
-			reduceEl: '', // 缩小图片的dom元素，可为类名、id
+			scaleEl: '', // 放大图片的dom元素，可为类名、id
+			zoomEl: '', // 缩小图片的dom元素，可为类名、id
 			cutEl: '', // 触发裁剪的dom元素，可为类名、id
 			rotateEl: '', // 触发逆时针旋转的dom元素，可为类名、id
 			onRender: null, // 渲染成功回调
-			onCut: null // 裁剪成功回调
+			onCut: null, // 裁剪成功回调,
+			onScale: null, // 放大图片的回调时间
+			onZoom: null // 缩小图片的回调
 		}
 		if (!this.checkConfig(config)) return
 		this.init()
@@ -36,28 +39,28 @@ export default class {
 	checkConfig(config) {
 		if (isEmpty(config)) return false
 		if (!isObject(config)) return warn('配置信息格式不合法')
-		let arr = ['cutWidth', 'cutHeight', 'mincutWidth', 'mincutHeight', 'maxScale', 'minScale', 'scale']
+		let arr = ['cutWidth', 'cutHeight', 'minCutWidth', 'minCutHeight', 'maxScaleRatio', 'maxZoomRatio', 'ratio']
 		arr.forEach((key) => {
 			if (config.hasOwnProperty(key)) {
 				config[key] = parseFloat(config[key])
 			}
 		})
 		config = {...this.defaultConfig, ...config}
-		let {containerEl, mincutWidth, mincutHeight, cutWidth, cutHeight, maxScale, minScale, canReduce, canMagnify} = config
+		let {containerEl, minCutWidth, minCutHeight, cutWidth, cutHeight, maxScaleRatio, maxZoomRatio, zoomable, scalable} = config
 		// 判断containerEl
 		if (isEmpty(containerEl)) return warn('containerEl未配置')
 		let container = document.querySelector(containerEl)
 		if (!container) return warn(containerEl + '的dom元素不存在')
 		this.container = container
-		//判断mincutWidth, mincutHeight
-		if (config.canChangeCutSize) {
-			if (!isEmpty(mincutHeight)) {
-				if (!isNumber(mincutHeight)) return warn('mincutHeight必须为数值')
-				if (Number(mincutHeight) < 1) return warn('mincutHeight不能小于1')
+		//判断minCutWidth, minCutHeight
+		if (config.cutBoxResizable) {
+			if (!isEmpty(minCutHeight)) {
+				if (!isNumber(minCutHeight)) return warn('minCutHeight必须为数值')
+				if (Number(minCutHeight) < 1) return warn('minCutHeight不能小于1')
 			}
-			if (!isEmpty(mincutWidth)) {
-				if (!isNumber(mincutWidth)) return warn('mincutWidth必须为数值')
-				if (Number(mincutWidth) < 1) return warn('mincutWidth不能小于1')
+			if (!isEmpty(minCutWidth)) {
+				if (!isNumber(minCutWidth)) return warn('minCutWidth必须为数值')
+				if (Number(minCutWidth) < 1) return warn('minCutWidth不能小于1')
 			}
 		}
 		// 判断cutWidth， cutHeight
@@ -70,33 +73,33 @@ export default class {
 			if (Number(cutHeight) < 1) return warn('cutHeight不能小于1')
 		}
 		// 判断放大缩小相关参数
-		if (canMagnify) {
-			if (!isEmpty(maxScale)) {
-				if (!isNumber(maxScale)) return warn('maxScale必须为数值')
-				if (Number(maxScale) < 1) return warn('maxScale不能小于1')
+		if (scalable) {
+			if (!isEmpty(maxScaleRatio)) {
+				if (!isNumber(maxScaleRatio)) return warn('maxScaleRatio必须为数值')
+				if (Number(maxScaleRatio) < 1) return warn('maxScaleRatio不能小于1')
 			}
-			let {mangnifyEl} = config
-			if (isEmpty(mangnifyEl)) return warn('mangnifyEl未配置')
-			let mangnifyNode = document.querySelector(mangnifyEl)
-			if (!mangnifyNode) return warn(mangnifyEl + '的dom元素不存在')
-			this.mangnifyNode = mangnifyNode
+			let {scaleEl} = config
+			if (isEmpty(scaleEl)) return warn('scaleEl未配置')
+			let scaleNode = document.querySelector(scaleEl)
+			if (!scaleNode) return warn(scaleEl + '的dom元素不存在')
+			this.scaleNode = scaleNode
 		}
-		if (canReduce) {
-			if (!isEmpty(minScale)) {
-				if (!isNumber(minScale)) return warn('minScale必须为数值')
-				if (Number(minScale) >= 1) return warn('minScale必须小于1')
+		if (zoomable) {
+			if (!isEmpty(maxZoomRatio)) {
+				if (!isNumber(maxZoomRatio)) return warn('maxZoomRatio必须为数值')
+				if (Number(maxZoomRatio) >= 1) return warn('maxZoomRatio必须小于1')
 			}
-			let {reduceEl} = config
-			if (isEmpty(reduceEl)) return warn('reduceEl未配置')
-			let reduceNode = document.querySelector(reduceEl)
-			if (!reduceNode) return warn(reduceEl + '的dom元素不存在')
-			this.reduceNode = reduceNode
+			let {zoomEl} = config
+			if (isEmpty(zoomEl)) return warn('zoomEl未配置')
+			let zoomNode = document.querySelector(zoomEl)
+			if (!zoomNode) return warn(zoomEl + '的dom元素不存在')
+			this.zoomNode = zoomNode
 		}
-		if (canMagnify || canReduce) {
-			let {scale} = this
-			if (!isEmpty(scale)) {
-				if (!isNumber(scale)) return warn('scale必须为数值')
-				if (Number(maxScale) <= 1) return warn('scale必须大于1')
+		if (scalable || zoomable) {
+			let {ratio} = this
+			if (!isEmpty(ratio)) {
+				if (!isNumber(ratio)) return warn('scale必须为数值')
+				if (Number(maxScaleRatio) <= 1) return warn('scale必须大于1')
 			}
 		}
 		/* 触发裁剪的dom校验 */
@@ -110,8 +113,8 @@ export default class {
 		let {imageSrc} = config
 		if (isEmpty(imageSrc)) return warn('imageSrc不能为空')
 		/* 判断是否可旋转 */
-		let {canRotate, rotateEl} = config
-		if (canRotate) {
+		let {rotatable, rotateEl} = config
+		if (rotatable) {
 			if (isEmpty(rotateEl)) return warn('rotateEl未配置')
 			let rotateNode = document.querySelector(rotateEl)
 			if (!rotateNode) return warn(rotateEl + '的dom不存在')
@@ -284,23 +287,23 @@ export default class {
 			container.onmouseup = null
 			this.checkCutterBox()
 		}
-		let {canRotate, canMagnify, canReduce, scale} = this.config
+		let {rotatable, scalable, zoomable, ratio} = this.config
 		/* 放大 */
-		if (canMagnify && this.mangnifyNode) {
-			this.mangnifyNode.onclick = () => {
-				if (!this.config.canMagnify) return
-				this.changeImageSize(scale)
+		if (scalable && this.scaleNode) {
+			this.scaleNode.onclick = () => {
+				if (!this.config.scalable) return
+				this.changeImageSize(ratio)
 			}
 		}
 		/* 缩小 */
-		if (canReduce && this.reduceNode) {
-			this.reduceNode.onclick = () => {
-				if (!this.config.canReduce) return
-				this.changeImageSize(1 / scale)
+		if (zoomable && this.zoomNode) {
+			this.zoomNode.onclick = () => {
+				if (!this.config.zoomable) return
+				this.changeImageSize(1 / ratio)
 			}
 		}
 		/* 逆时针旋转图片 */
-		if (canRotate && this.rotateNode) {
+		if (rotatable && this.rotateNode) {
 			this.rotateNode.onclick = () => {
 				this.rotateImage()
 			}
@@ -315,62 +318,62 @@ export default class {
 	/* 裁剪图片 */
 	cutImage() {
 		let {canvas, rotate, orgImgW, imgHeight, imgWidth, imgTop, imgLeft, cutLeft, cutTop, image, containerW, containerH} = this
-		let {cutHeight, cutWidth, onCut} = this.config
-		let scale = imgWidth / orgImgW
+		let {cutHeight, cutWidth, onCut, outputType} = this.config
+		let ratio = imgWidth / orgImgW
 		let ctx = canvas.getContext('2d')
-		let sWidth = cutWidth / scale
-		let sHeight = cutHeight / scale
+		let sWidth = cutWidth / ratio
+		let sHeight = cutHeight / ratio
 		canvas.width = cutWidth
 		canvas.height = cutHeight
 		if (rotate === -1) {
-			let sx = toFixed((containerH - cutHeight - cutTop - (containerH - imgWidth) / 2) / scale)
-			let sy = toFixed((cutLeft - (containerW - imgHeight) / 2) / scale)
-			sWidth = cutHeight / scale
-			sHeight = cutWidth / scale
+			let sx = toFixed((containerH - cutHeight - cutTop - (containerH - imgWidth) / 2) / ratio)
+			let sy = toFixed((cutLeft - (containerW - imgHeight) / 2) / ratio)
+			sWidth = cutHeight / ratio
+			sHeight = cutWidth / ratio
 			ctx.rotate((90 * rotate * Math.PI) / 180)
 			ctx.drawImage(image, sx, sy, sWidth, sHeight, -cutHeight, 0, cutHeight, cutWidth)
 		} else if (rotate === -2) {
-			let sx = this.toFixed((containerW - cutLeft - cutWidth - (containerW - imgWidth) / 2) / scale)
-			let sy = this.toFixed((containerH - cutHeight - cutTop - (containerH - imgHeight) / 2) / scale)
+			let sx = this.toFixed((containerW - cutLeft - cutWidth - (containerW - imgWidth) / 2) / ratio)
+			let sy = this.toFixed((containerH - cutHeight - cutTop - (containerH - imgHeight) / 2) / ratio)
 			ctx.rotate((90 * rotate * Math.PI) / 180)
 			ctx.drawImage(image, sx, sy, sWidth, sHeight, -cutWidth, -cutHeight, cutWidth, cutHeight)
 		} else if (rotate === -3) {
-			let sx = this.toFixed((cutTop - (containerH - imgWidth) / 2) / scale)
-			let sy = this.toFixed((containerW - cutLeft - cutWidth - (containerW - imgHeight) / 2) / scale)
-			sWidth = cutHeight / scale
-			sHeight = cutWidth / scale
+			let sx = this.toFixed((cutTop - (containerH - imgWidth) / 2) / ratio)
+			let sy = this.toFixed((containerW - cutLeft - cutWidth - (containerW - imgHeight) / 2) / ratio)
+			sWidth = cutHeight / ratio
+			sHeight = cutWidth / ratio
 			ctx.rotate((90 * rotate * Math.PI) / 180)
 			ctx.drawImage(image, sx, sy, sWidth, sHeight, 0, -cutWidth, cutHeight, cutWidth)
 		} else {
-			let sx = (cutLeft - imgLeft) / scale
-			let sy = (cutTop - imgTop) / scale
+			let sx = (cutLeft - imgLeft) / ratio
+			let sy = (cutTop - imgTop) / ratio
 			ctx.drawImage(image, sx, sy, sWidth, sHeight, 0, 0, cutWidth, cutHeight)
 		}
-		let cutImgSrc = canvas.toDataURL('image/png')
+		let cutImgSrc = canvas.toDataURL(`image/${outputType}`)
 		if (isFunction(onCut)) onCut(cutImgSrc)
 		return cutImgSrc
 	}
 	/* 改变图片尺寸 */
-	changeImageSize(scale) {
+	changeImageSize(ratio) {
 		let {imgWidth, orgImgW, orgImgH, imgHeight, containerH, containerW, image} = this
-		let {maxScale, minScale, onManify, onReduce} = this.config
-		imgWidth *= scale
-		imgHeight *= scale
-		if (scale > 1) {
-			this.config.canReduce = true
+		let {maxScaleRatio, maxZoomRatio, onScale, onZoom} = this.config
+		imgWidth *= ratio
+		imgHeight *= ratio
+		if (ratio > 1) {
+			this.config.zoomable = true
 			/* 不能超过最大放大比例 */
-			if (imgWidth / orgImgW > maxScale) {
-				this.config.canMagnify = false
-				imgWidth = orgImgW * maxScale
-				imgHeight = orgImgH * maxScale
+			if (imgWidth / orgImgW > maxScaleRatio) {
+				this.config.scalable = false
+				imgWidth = orgImgW * maxScaleRatio
+				imgHeight = orgImgH * maxScaleRatio
 			}
 		} else {
-			this.config.canMagnify = true
+			this.config.scalable = true
 			/* 不能小于最小缩小比例 */
-			if (imgWidth / orgImgW < minScale) {
-				this.containerH.canReduce = false
-				imgWidth = orgImgW * minScale
-				imgHeight = orgImgH * minScale
+			if (imgWidth / orgImgW < maxZoomRatio) {
+				this.containerH.zoomable = false
+				imgWidth = orgImgW * maxZoomRatio
+				imgHeight = orgImgH * maxZoomRatio
 			}
 		}
 		/* 图片不能小于cutterBox的尺寸 */
@@ -389,8 +392,8 @@ export default class {
 		this.imgTop = top
 		this.imgLeft = left
 		this.checkCutterBox()
-		if (scale > 1 && isFunction(onManify)) onManify(this.config)
-		if (scale < 1 && isFunction(onReduce)) onReduce(this.config)
+		if (ratio > 1 && isFunction(onScale)) onScale(this.config)
+		if (ratio < 1 && isFunction(onZoom)) onZoom(this.config)
 	}
 	/* 逆时针旋转图片 */
 	rotateImage() {
@@ -408,7 +411,7 @@ export default class {
 		e.preventDefault()
 		if (!this.cutterIsEnter) return
 		let {cutterBox, cursorEnums, container} = this
-		let {cutWidth, cutHeight, canChangeCutSize} = this.config
+		let {cutWidth, cutHeight, cutBoxResizable} = this.config
 		let {clientX, clientY} = e
 		let {top, left} = cutterBox.getBoundingClientRect()
 		let offsetX = clientX - left
@@ -449,7 +452,7 @@ export default class {
 				status = 8
 			}
 		}
-		if (canChangeCutSize || (!canChangeCutSize && status === 9)) {
+		if (cutBoxResizable || (!cutBoxResizable && status === 9)) {
 			cutterBox.style.cursor = cursorEnums[status] || 'default'
 			this.dragStatus = status
 		}
@@ -464,7 +467,7 @@ export default class {
 	/* 移动鼠标改变尺寸和位置 */
 	handleResize(e) {
 		e.preventDefault()
-		let {cutWidth, cutHeight, mincutWidth} = this.config
+		let {cutWidth, cutHeight, minCutWidth} = this.config
 		let {cutTop, cutLeft, startPos, dragStatus, containerW, containerH} = this
 		let moveX = e.clientX - startPos.clientX
 		let moveY = e.clientY - startPos.clientY
@@ -474,7 +477,7 @@ export default class {
 			let newLeft = cutLeft + moveX
 			let newHeight = cutHeight
 			let newTop = cutTop
-			if (newWidth < mincutWidth) return
+			if (newWidth < minCutWidth) return
 			if (newLeft < 0) {
 				newLeft = 0
 			}
@@ -502,7 +505,7 @@ export default class {
 			let newWidth = cutWidth + moveX
 			let newTop = cutTop
 			let newHeight = cutHeight
-			if (newWidth < mincutWidth) return
+			if (newWidth < minCutWidth) return
 			if (cutLeft + newWidth > containerW) {
 				newWidth = containerW - cutWidth
 			}
@@ -561,10 +564,10 @@ export default class {
 		this.startPos = {clientX: e.clientX, clientY: e.clientY}
 	}
 	resizeTop(cutHeight, cutTop, moveY) {
-		let {mincutHeight} = this.config
+		let {minCutHeight} = this.config
 		let newHeight = cutHeight - moveY
 		let newTop = cutTop + moveY
-		if (newHeight < mincutHeight) return
+		if (newHeight < minCutHeight) return
 		if (newTop < 0) {
 			newTop = 0
 		}
@@ -572,9 +575,9 @@ export default class {
 	}
 	resizeBottom(cutHeight, cutTop, moveY) {
 		let {containerH} = this
-		let {mincutHeight} = this.config
+		let {minCutHeight} = this.config
 		let newHeight = cutHeight + moveY
-		if (newHeight < mincutHeight) return
+		if (newHeight < minCutHeight) return
 		if (cutTop + newHeight > containerH) {
 			newHeight = containerH - cutTop
 		}
@@ -587,7 +590,7 @@ export default class {
 		let imgRatio = orgImgW / orgImgH
 		let cutRatio = cutWidth / cutHeight
 		if (imgHeight < cutHeight) {
-			this.config.canReduce = false
+			this.config.zoomable = false
 			if (imgWidth < cutWidth) {
 				if (imgRatio > cutRatio) {
 					imgHeight = cutHeight
@@ -602,7 +605,7 @@ export default class {
 			}
 		} else {
 			if (imgWidth < cutWidth) {
-				this.config.canReduce = false
+				this.config.zoomable = false
 				imgWidth = cutWidth
 				imgHeight = imgWidth / imgRatio
 			}

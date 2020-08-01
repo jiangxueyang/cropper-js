@@ -23,8 +23,8 @@
 <body>
     <div class="wrap"></div>
     <div class="setting-box">
-        <button id="magnify">放大</button>
-        <button id="reduce">缩小</button>
+        <button id="scale">放大</button>
+        <button id="zoom">缩小</button>
         <button id="rotate">旋转</button>
         <button id="cut">裁剪</button>
     </div>
@@ -36,23 +36,27 @@
             let cutter = new Cutter({
                 imageSrc: './images/bg.jpeg',
                 containerEl: '.wrap',
-                mangnifyEl: '#magnify',
-                reduceEl: '#reduce',
+                scalable: true,
+                zoomable: true,
+                rotatable: true,
+                cutBoxResizable: true,
+                scaleEl: '#scale',
+                zoomEl: '#zoom',
                 cutEl: '#cut',
                 rotateEl: '#rotate',
+                outputType: 'jpeg',
                 onRender() {
-                    console.log('渲染成功')
+                    console.log('Has rendered')
                 },
-                onManify(config) {
-                    console.log(config, '放大了')
+                onScale(config) {
+                    console.log(config, 'Has scaled')
                 },
-                onReduce(config) {
-                    console.log(config, '缩小了')
+                onZoom(config) {
+                    console.log(config, 'Has zoomed')
                 },
                 onCut(url) {
-                    if (url) {
-                        document.querySelector('#image').src = url
-                    }
+                    console.log(url, 'image base64 url')
+                    document.querySelector('#image').src = url
                 }
             })
         }

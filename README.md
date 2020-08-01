@@ -53,10 +53,10 @@ scalable|Boolean|false|true|If true, the image can be scaled.
 zoomable|Boolean|false|true|If true, the image can be zoomed.
 ratatable|Boolean|false|true|If true, the image can be rotated.
 cutBoxResizable|Boolean|false|true|If true, the size of the cropped image can be resized.
-scaleEl|String|false|''|A dom that can trigger scaling the image.If the value of scalable is true, it is required.
-zoomEl|String|false|''|A dom that can trigger zooming the image.If the value of zoomable is true, it is required.
-rotateEl|String|false|''|A dom that can trigger rotating the image.If the value of ratatable is true, it is required.
-cutEl|String|false|''|A dom that can trigger cropping the image.
+scaleEl|String|false|''|A dom that can trigger scaling the image.If the value of scalable is true, it is required. It can be a class name or a id.
+zoomEl|String|false|''|A dom that can trigger zooming the image.If the value of zoomable is true, it is required. It can be a class name or a id.
+rotateEl|String|false|''|A dom that can trigger rotating the image.If the value of ratatable is true, it is required. It can be a class name or a id.
+cutEl|String|false|''|A dom that can trigger cropping the image. It can be a class name or a id.
 minCutWidth|Number|false|16|The minimum width of the cropped image's size.
 cutWidth|Number|false|200|The width of the cropped image's  It must be bigger than the value of minCutWidth.
 minCutHeight|Number|false|16|The minimum height of the cropped image's size.

@@ -63,6 +63,7 @@ minCutHeight|Number|false|16|The minimum height of the cropped image's size.
 cutHeight|Number|false|200|The heigth of the cropped image's size. It must be bigger than the value of minCutHeight.
 maxScaleRatio|Number|false|3|The maximum scale ratio of the image.
 maxZoomRatio|Number|false|3|The maximum zoom ratio of the image.
+outputType|String|false|png|The cropped image's type, png or jpeg.
 onRender|Function|false|null|The callback after rendering successfully.
 onCut|Function|false|null|The callback after cropping. It will return base64 url of the cropped image.
 onScale|Function|false|null|The callback after scaling. It will return all config.
